@@ -29,9 +29,14 @@ public class UserDto {
     @NotEmpty(message = "Lösenord måste anges")
     private String password;
 
-    public UserDto(String email, String password, PasswordEncoder passwordEncoder) {
+//    public UserDto(String email, String password, PasswordEncoder passwordEncoder) {
+//        this.email = email;
+//        this.password = passwordEncoder.encode(password);
+//    }
+
+    public UserDto(String email, String password) {
         this.email = email;
-        this.password = passwordEncoder.encode(password);
+        this.password = password;
     }
 
     public UserDto(User user) {

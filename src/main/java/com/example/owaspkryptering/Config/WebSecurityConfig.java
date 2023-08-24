@@ -1,5 +1,9 @@
 package com.example.owaspkryptering.Config;
 
+import com.example.owaspkryptering.ErrorHandling.CustomAuthenticationFailureHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,13 +23,16 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    public WebSecurityConfig() {
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+    public WebSecurityConfig(CustomAuthenticationFailureHandler customAuthenticationFailureHandler) {
+        this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
     }
 
-    @Bean
-    public static PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
+//    @Bean
+//    public static PasswordEncoder passwordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
 
 // ...
 
@@ -33,11 +40,12 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http)
             throws Exception {
         http.authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/register/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/index")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/users")).hasRole("ADMIN"))
+                        .requestMatchers(new AntPathRequestMatcher("/users")).hasRole("ADMIN")
+                        .requestMatchers(new AntPathRequestMatcher("/welcome")).authenticated()
+                        .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
@@ -65,11 +73,12 @@ public class WebSecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        String hashedPassword = passwordEncoder().encode("password");
+//        String hashedPassword = passwordEncoder().encode("password");
         UserDetails user =
                 User.builder()
                         .username("user")
-                        .password(hashedPassword)
+//                        .password(hashedPassword)
+                        .password("password")
                         .roles("USER")
                         .build();
         return new InMemoryUserDetailsManager(user);

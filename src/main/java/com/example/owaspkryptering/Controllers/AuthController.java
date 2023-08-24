@@ -4,6 +4,8 @@ import com.example.owaspkryptering.DTO.UserDto;
 import com.example.owaspkryptering.Models.User;
 import com.example.owaspkryptering.Services.UserService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,6 +17,8 @@ import java.util.List;
 
 @Controller
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final UserService userService;
 
@@ -77,11 +81,14 @@ public class AuthController {
     @PostMapping("/login")
     public String login(@ModelAttribute("user") UserDto userDto, Model model) {
         User user = userService.findByEmail(userDto.getEmail());
+        logger.debug("User: " + user);
         if (user != null && user.getPassword().equals(userDto.getPassword())) {
             model.addAttribute("user", user);
+            logger.info("User logged in");
             return "redirect:/welcome";
         } else {
             model.addAttribute("error", "Felaktigt användarnamn eller lösenord");
+            logger.error("User failed to log in");
             return "login";
         }
     }

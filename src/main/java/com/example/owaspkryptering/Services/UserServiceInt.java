@@ -19,13 +19,12 @@ public class UserServiceInt implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
+//    private final PasswordEncoder passwordEncoder;
 
 
-    public UserServiceInt(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceInt(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -35,8 +34,9 @@ public class UserServiceInt implements UserService {
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
 
-        String hashedPassword = passwordEncoder.encode(userDto.getPassword());
-        user.setPassword(hashedPassword);
+//        String hashedPassword = passwordEncoder.encode(userDto.getPassword());
+//        user.setPassword(hashedPassword);
+        user.setPassword(userDto.getPassword());
 
         Role role = roleRepository.findByName("user");
         if (role == null) {
@@ -44,6 +44,7 @@ public class UserServiceInt implements UserService {
         }
         user.setRoles(List.of(role));
         userRepository.save(user);
+        System.out.println("User saved" + user);
     }
 
     @Override
