@@ -44,7 +44,7 @@ public class AuthController {
 
         User existing = userService.findByEmail(userDto.getEmail());
 
-        if (existing != null && existing.getEmail() != null && !existing.getEmail().isEmpty()) {
+        if (existing != null) {
             result.rejectValue("email", null, "Det finns redan en användare med den e-postadressen");
         }
 
@@ -65,19 +65,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@Valid @ModelAttribute("user") UserDto userDto, BindingResult result, Model model) {
-        User existing = userService.findByEmail(userDto.getEmail());
-
-        if (existing == null || existing.getEmail() == null || existing.getEmail().isEmpty()) {
-            result.rejectValue("email", null, "Det finns ingen användare med den e-postadressen");
+    public String login(@ModelAttribute("user") UserDto userDto, Model model) {
+        User user = userService.findByEmail(userDto.getEmail());
+        if (user != null && user.getPassword().equals(userDto.getPassword())) {
+            model.addAttribute("user", user);
+            return "redirect:/welcome";
+        } else {
+            model.addAttribute("error", "Felaktigt användarnamn eller lösenord");
+            return "login";
         }
-
-        if (result.hasErrors()) {
-            model.addAttribute("user", userDto);
-            return "/login";
-        }
-
-        userService.saveUser(userDto);
-        return "redirect:/login?success";
     }
 }
