@@ -32,6 +32,16 @@ public class AuthController {
         return "login";
     }
 
+    @GetMapping("/welcome")
+    public String welcome() {
+        return "welcome";
+    }
+
+    @GetMapping("/logout")
+    public String logout() {
+        return "logout";
+    }
+
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         UserDto user = new UserDto();

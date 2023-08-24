@@ -5,6 +5,9 @@ import com.example.owaspkryptering.Models.Role;
 import com.example.owaspkryptering.Models.User;
 import com.example.owaspkryptering.Repositories.RoleRepository;
 import com.example.owaspkryptering.Repositories.UserRepository;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -16,10 +19,13 @@ public class UserServiceInt implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceInt(UserRepository userRepository, RoleRepository roleRepository) {
+
+    public UserServiceInt(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -28,7 +34,9 @@ public class UserServiceInt implements UserService {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
-        user.setPassword(userDto.getPassword());
+
+        String hashedPassword = passwordEncoder.encode(userDto.getPassword());
+        user.setPassword(hashedPassword);
 
         Role role = roleRepository.findByName("user");
         if (role == null) {
@@ -49,6 +57,7 @@ public class UserServiceInt implements UserService {
         return users.stream().map(this::mapToUserDto).collect(Collectors.toList());
     }
 
+    // För att visa alla användare
     private UserDto mapToUserDto(User user) {
         UserDto userDto = new UserDto();
         userDto.setFirstName(user.getFirstName());
