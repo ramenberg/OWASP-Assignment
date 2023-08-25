@@ -6,6 +6,9 @@ import com.example.owaspkryptering.Services.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,11 +22,13 @@ import java.util.List;
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private final PasswordEncoder passwordEncoder;
 
     private final UserService userService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/index")
@@ -53,43 +58,73 @@ public class AuthController {
         return "register";
     }
 
+//    @PostMapping("/register")
+//    public String registration(@Valid @ModelAttribute("user") UserDto userDto, BindingResult result, Model model) {
+//
+//        User existing = userService.findByEmail(userDto.getEmail());
+//
+//        if (existing != null) {
+//            result.rejectValue("email", null, "Det finns redan en användare med den e-postadressen");
+//        }
+//
+//        if (result.hasErrors()) {
+//            model.addAttribute("user", userDto);
+//            return "/register";
+//        }
+//
+//        userService.saveUser(userDto);
+//        return "redirect:/welcome";
+//    }
+
     @PostMapping("/register/save")
-    public String registration(@Valid @ModelAttribute("user") UserDto userDto, BindingResult result, Model model) {
+    public String registration(@Valid @ModelAttribute("user") UserDto userDto,
+                               BindingResult result,
+                               Model model){
+        User existingUser = userService.findUserByEmail(userDto.getEmail());
 
-        User existing = userService.findByEmail(userDto.getEmail());
-
-        if (existing != null) {
-            result.rejectValue("email", null, "Det finns redan en användare med den e-postadressen");
+        if(existingUser != null && existingUser.getEmail() != null && !existingUser.getEmail().isEmpty()){
+            result.rejectValue("email", null,
+                    "There is already an account registered with the same email");
         }
 
-        if (result.hasErrors()) {
+        if(result.hasErrors()){
             model.addAttribute("user", userDto);
             return "/register";
         }
 
         userService.saveUser(userDto);
-        return "redirect:/register?success";
+        return "redirect:/index";
     }
 
     @GetMapping("/users")
+    @PreAuthorize("hasRole('admin')")
     public String users(Model model) {
         List<UserDto> users = userService.findAllUsers();
         model.addAttribute("users", users);
         return "users";
     }
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", headers = "Accept=application/json")
     public String login(@ModelAttribute("user") UserDto userDto, Model model) {
-        User user = userService.findByEmail(userDto.getEmail());
-        logger.debug("User: " + user);
-        if (user != null && user.getPassword().equals(userDto.getPassword())) {
-            model.addAttribute("user", user);
-            logger.info("User logged in");
-            return "redirect:/welcome";
-        } else {
-            model.addAttribute("error", "Felaktigt användarnamn eller lösenord");
-            logger.error("User failed to log in");
+        try {
+            logger.debug("User submitted email: " + userDto.getEmail() + " and password: " + userDto.getPassword());
+            User user = userService.findByEmail(userDto.getEmail());
+
+            if (user != null && passwordEncoder.matches(userDto.getPassword(), user.getPassword())) {
+                model.addAttribute("user", user);
+                logger.debug("User logged in");
+                return "redirect:/welcome";
+            } else {
+                model.addAttribute("error", "Felaktigt användarnamn eller lösenord");
+                System.out.println("User failed to log in");
+                logger.debug("User failed to log in");
+                return "login";
+            }
+        } catch (Exception e) {
+            logger.debug("An error occurred during login: " + e.getMessage());
+            model.addAttribute("error", "Ett fel uppstod under inloggningen");
             return "login";
         }
     }
+
 }

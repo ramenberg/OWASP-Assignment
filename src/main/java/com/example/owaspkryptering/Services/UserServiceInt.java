@@ -5,12 +5,11 @@ import com.example.owaspkryptering.Models.Role;
 import com.example.owaspkryptering.Models.User;
 import com.example.owaspkryptering.Repositories.RoleRepository;
 import com.example.owaspkryptering.Repositories.UserRepository;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,12 +18,15 @@ public class UserServiceInt implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-//    private final PasswordEncoder passwordEncoder;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceInt.class);
+    private final PasswordEncoder passwordEncoder;
 
 
-    public UserServiceInt(UserRepository userRepository, RoleRepository roleRepository) {
+    public UserServiceInt(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -34,9 +36,9 @@ public class UserServiceInt implements UserService {
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
 
-//        String hashedPassword = passwordEncoder.encode(userDto.getPassword());
-//        user.setPassword(hashedPassword);
-        user.setPassword(userDto.getPassword());
+        String hashedPassword = passwordEncoder.encode(userDto.getPassword());
+        user.setPassword(hashedPassword);
+//        user.setPassword(userDto.getPassword());
 
         Role role = roleRepository.findByName("user");
         if (role == null) {
@@ -44,18 +46,27 @@ public class UserServiceInt implements UserService {
         }
         user.setRoles(List.of(role));
         userRepository.save(user);
-        System.out.println("User saved" + user);
+        logger.debug("User saved: " + user);
     }
 
     @Override
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email);
+        logger.debug("findByEmail result for email: " + email + " is: " + user);
+        return user;
     }
 
     @Override
     public List<UserDto> findAllUsers() {
         List<User> users = userRepository.findAll();
         return users.stream().map(this::mapToUserDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        User user = userRepository.findByEmail(email);
+        logger.debug("findUserByEmail result for email: " + email + " is: " + user);
+        return user;
     }
 
     // För att visa alla användare
@@ -67,6 +78,7 @@ public class UserServiceInt implements UserService {
         return userDto;
     }
     private Role checkRoleExists() {
+        logger.debug("Role does not exist, creating new role");
         Role role = new Role();
         role.setName("user");
         return roleRepository.save(role);
