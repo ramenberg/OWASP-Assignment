@@ -107,21 +107,16 @@ public class AuthController {
     @PostMapping(value = "/login", headers = "Accept=application/json")
     public String login(@ModelAttribute("user") UserDto userDto, Model model) {
         try {
-            logger.debug("User submitted email: " + userDto.getEmail() + " and password: " + userDto.getPassword());
             User user = userService.findByEmail(userDto.getEmail());
 
             if (user != null && passwordEncoder.matches(userDto.getPassword(), user.getPassword())) {
                 model.addAttribute("user", user);
-                logger.debug("User logged in");
                 return "redirect:/welcome";
             } else {
                 model.addAttribute("error", "Felaktigt användarnamn eller lösenord");
-                System.out.println("User failed to log in");
-                logger.debug("User failed to log in");
                 return "login";
             }
         } catch (Exception e) {
-            logger.debug("An error occurred during login: " + e.getMessage());
             model.addAttribute("error", "Ett fel uppstod under inloggningen");
             return "login";
         }

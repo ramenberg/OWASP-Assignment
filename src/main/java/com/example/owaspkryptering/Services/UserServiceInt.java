@@ -36,9 +36,10 @@ public class UserServiceInt implements UserService {
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
 
-        String hashedPassword = passwordEncoder.encode(userDto.getPassword());
-        user.setPassword(hashedPassword);
-//        user.setPassword(userDto.getPassword());
+        UserDto userDtoWithEncryptedPassword = new UserDto(userDto.getEmail(), userDto.getPassword());
+        userDtoWithEncryptedPassword.encryptPassword(passwordEncoder);
+
+        user.setPassword(userDtoWithEncryptedPassword.getPassword());
 
         Role role = roleRepository.findByName("user");
         if (role == null) {
@@ -46,7 +47,6 @@ public class UserServiceInt implements UserService {
         }
         user.setRoles(List.of(role));
         userRepository.save(user);
-        logger.debug("User saved: " + user);
     }
 
     @Override
