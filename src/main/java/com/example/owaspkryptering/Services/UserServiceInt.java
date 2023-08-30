@@ -7,6 +7,7 @@ import com.example.owaspkryptering.Repositories.RoleRepository;
 import com.example.owaspkryptering.Repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,11 +36,12 @@ public class UserServiceInt implements UserService {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
+        user.setPassword(userDto.getPassword());
 
-        UserDto userDtoWithEncryptedPassword = new UserDto(userDto.getEmail(), userDto.getPassword());
-        userDtoWithEncryptedPassword.encryptPassword(passwordEncoder);
-
-        user.setPassword(userDtoWithEncryptedPassword.getPassword());
+          // Kryptera lösenordet innan du sparar det
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String encryptedPassword = passwordEncoder.encode(userDto.getPassword());
+        user.setPassword(encryptedPassword);
 
         Role role = roleRepository.findByName("user");
         if (role == null) {
@@ -47,13 +49,6 @@ public class UserServiceInt implements UserService {
         }
         user.setRoles(List.of(role));
         userRepository.save(user);
-    }
-
-    @Override
-    public User findByEmail(String email) {
-        User user = userRepository.findByEmail(email);
-        logger.debug("findByEmail result for email: " + email + " is: " + user);
-        return user;
     }
 
     @Override
@@ -65,7 +60,7 @@ public class UserServiceInt implements UserService {
     @Override
     public User findUserByEmail(String email) {
         User user = userRepository.findByEmail(email);
-        logger.debug("findUserByEmail result for email: " + email + " is: " + user);
+        logger.info("findUserByEmail result for email: " + email + " is: " + user);
         return user;
     }
 
@@ -75,10 +70,11 @@ public class UserServiceInt implements UserService {
         userDto.setFirstName(user.getFirstName());
         userDto.setLastName(user.getLastName());
         userDto.setEmail(user.getEmail());
+        userDto.setPassword(user.getPassword());
         return userDto;
     }
     private Role checkRoleExists() {
-        logger.debug("Role does not exist, creating new role");
+        logger.info("Role does not exist, creating new role");
         Role role = new Role();
         role.setName("user");
         return roleRepository.save(role);

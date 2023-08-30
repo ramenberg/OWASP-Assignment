@@ -44,4 +44,8 @@ public class User {
     public void setPassword(String password, PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(password);
     }
+
+    public String getPassword() {
+        return password;
+    }
 }

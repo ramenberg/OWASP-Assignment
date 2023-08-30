@@ -106,8 +106,9 @@ public class AuthController {
 
     @PostMapping(value = "/login", headers = "Accept=application/json")
     public String login(@ModelAttribute("user") UserDto userDto, Model model) {
+        logger.info("Login attempt with email: {}", userDto.getEmail() + " and password: " + userDto.getPassword());
         try {
-            User user = userService.findByEmail(userDto.getEmail());
+            User user = userService.findUserByEmail(userDto.getEmail());
 
             if (user != null && passwordEncoder.matches(userDto.getPassword(), user.getPassword())) {
                 model.addAttribute("user", user);
