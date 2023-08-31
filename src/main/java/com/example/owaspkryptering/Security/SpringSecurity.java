@@ -40,7 +40,7 @@ public class SpringSecurity {
                         logout -> logout
                                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                                 .permitAll()
-                );
+                ).csrf().disable(); // Inaktiverar csrf-skyddet
         return http.build();
     }
 

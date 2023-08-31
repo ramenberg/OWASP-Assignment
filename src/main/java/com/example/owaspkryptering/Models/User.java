@@ -41,11 +41,26 @@ public class User {
     )
     private List<Role> roles = new ArrayList<>();
 
-    public void setPassword(String password, PasswordEncoder passwordEncoder) {
-        this.password = passwordEncoder.encode(password);
+    public User(String email, String password) {
+        this.email = email;
+        this.password = password;
     }
 
-    public String getPassword() {
-        return password;
+    public User(String email, String password, List<Role> roles) {
+        this.email = email;
+        this.password = password;
+        this.roles = roles;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setPassword(String password, PasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(password);
     }
 }

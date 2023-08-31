@@ -7,6 +7,7 @@ import com.example.owaspkryptering.Repositories.RoleRepository;
 import com.example.owaspkryptering.Repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,13 +22,12 @@ public class UserServiceInt implements UserService {
     private final RoleRepository roleRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceInt.class);
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
-    public UserServiceInt(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceInt(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -39,7 +39,6 @@ public class UserServiceInt implements UserService {
         user.setPassword(userDto.getPassword());
 
           // Kryptera lösenordet innan du sparar det
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String encryptedPassword = passwordEncoder.encode(userDto.getPassword());
         user.setPassword(encryptedPassword);
 
@@ -60,9 +59,24 @@ public class UserServiceInt implements UserService {
     @Override
     public User findUserByEmail(String email) {
         User user = userRepository.findByEmail(email);
-        logger.info("findUserByEmail result for email: " + email + " is: " + user);
+        logger.info("findUserByEmail result for email: " + email + " is: " + user.getEmail());
         return user;
     }
+
+//    @Override
+//    public User loadUserByUsername(String email) throws UsernameNotFoundException {
+//        User user = userRepository.findByEmail(email);
+//        if (user != null) {
+//            logger.info("loadUserByUsername user is not null");
+//            return new User(
+//                    user.getEmail(),
+//                    user.getPassword(),
+//                    user.getRoles());
+//        } else {
+//            throw new UsernameNotFoundException("Invalid username or password.");
+//        }
+//    }
+
 
     // För att visa alla användare
     private UserDto mapToUserDto(User user) {

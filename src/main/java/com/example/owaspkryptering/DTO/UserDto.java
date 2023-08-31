@@ -1,10 +1,8 @@
 package com.example.owaspkryptering.DTO;
 
-import com.example.owaspkryptering.Models.User;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Email;
 import lombok.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter
 @Setter
@@ -30,10 +28,6 @@ public class UserDto {
     public UserDto(String email, String password) {
         this.email = email;
         this.password = password;
-    }
-
-    public void encryptPassword(PasswordEncoder passwordEncoder) {
-        this.password = passwordEncoder.encode(this.password);
     }
 
 }
