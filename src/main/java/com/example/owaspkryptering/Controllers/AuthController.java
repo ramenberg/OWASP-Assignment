@@ -2,6 +2,7 @@ package com.example.owaspkryptering.Controllers;
 
 import com.example.owaspkryptering.DTO.UserDto;
 import com.example.owaspkryptering.Models.User;
+import com.example.owaspkryptering.Repositories.UserRepository;
 import com.example.owaspkryptering.Security.CustomUserDetailsService;
 import com.example.owaspkryptering.Services.UserService;
 import jakarta.validation.Valid;
@@ -32,11 +33,14 @@ public class AuthController {
     private final CustomUserDetailsService customUserDetailsService;
 
     UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
 
-    public AuthController(UserService userService, CustomUserDetailsService customUserDetailsService) {
+    public AuthController(UserService userService, CustomUserDetailsService customUserDetailsService,
+                          UserRepository userRepository) {
         this.userService = userService;
         this.customUserDetailsService = customUserDetailsService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/index")
@@ -70,7 +74,7 @@ public class AuthController {
     public String registration(@Valid @ModelAttribute("user") UserDto userDto,
                                BindingResult result,
                                Model model){
-        User existingUser = userService.findUserByEmail(userDto.getEmail());
+        User existingUser = userRepository.findByEmail(userDto.getEmail());
 
         if(existingUser != null && existingUser.getEmail() != null && !existingUser.getEmail().isEmpty()){
             result.rejectValue("email", null,
