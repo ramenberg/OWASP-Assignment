@@ -29,9 +29,9 @@ public class BruteForceTester {
             CloseableHttpClient httpClient = HttpClients.createDefault();
 
             String targetUrl = "http://localhost:8080/login"; // Serveradress och endpoint
-            String targetUsername = "two@test.se"; // Användarnamn att testa
+            String targetUsername = "three@test.se"; // Användarnamn att testa
             String characters = "0123456789"; // Tecken som kan ingå
-            int maxLength = 2; // Maximal längd på lösenordet
+            int maxLength = 3; // Maximal längd på lösenordet
 
             // Timing
             long startTime = System.currentTimeMillis(); // Starta tidtagning
@@ -48,7 +48,10 @@ public class BruteForceTester {
                 logger.info("Brute force attack finished. Password not cracked.");
             }
 
-            logger.info("Time taken: " + totalTime + " milliseconds (" + totalTime / 1000 + " seconds");
+            int totalTimeInSeconds = (int) (totalTime / 1000);
+            int totalTimeInMinutes = totalTimeInSeconds / 60;
+
+            logger.info("Time taken: " + totalTime + " milliseconds (" + totalTimeInSeconds + " seconds, " + totalTimeInMinutes + " minutes)");
 
             httpClient.close();
         }
