@@ -2,6 +2,7 @@ package com.example.owaspkryptering.Controllers;
 
 import com.example.owaspkryptering.DTO.UserDto;
 import com.example.owaspkryptering.Models.User;
+import com.example.owaspkryptering.Security.CustomUserDetailsService;
 import com.example.owaspkryptering.Services.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -28,11 +29,14 @@ public class AuthController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    private final CustomUserDetailsService customUserDetailsService;
+
     UserDetailsService userDetailsService;
 
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, CustomUserDetailsService customUserDetailsService) {
         this.userService = userService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @GetMapping("/index")
@@ -132,9 +136,11 @@ public class AuthController {
     public String login(@RequestParam("username") String username, @RequestParam("password") String password, Model model, UserDto userDto) {
         try {
             logger.info("Login attempt with username: {} and password: {}", username, password);
-            User userDetails = userService.findUserByEmail(userDto.getEmail());
+//            User userDetails = userService.findUserByEmail(userDto.getEmail());
 //            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            logger.info("From /login: Login attempt with username/email: {} and password: {}", userDetails.getEmail(), userDetails.getPassword());
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+            logger.info("From /login: Login attempt with username/email: {} and password: {}", userDetails.getUsername(), userDetails.getPassword());
+//            logger.info("From /login: Login attempt with username/email: {} and password: {}", userDetails.getEmail(), userDetails.getPassword());
 
             if (userDetails != null && passwordEncoder.matches(password, userDetails.getPassword())) {
                 logger.info("/login: logging in to welcome");
